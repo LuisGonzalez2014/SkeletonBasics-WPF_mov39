@@ -69,7 +69,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <summary>
         /// Active Kinect sensor
         /// </summary>
-        private KinectSensor sensor;
+        private KinectSensor sensor;     /*LO VAMOS A UTILIZAR NOSOTROS TAMBIEN (en lugar de crear otra instancia)*/
 
         /// <summary>
         /// Drawing group for skeleton rendering output
@@ -94,6 +94,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="skeleton">skeleton to draw clipping information for</param>
         /// <param name="drawingContext">drawing context to draw to</param>
+        /* INDICA QUÉ BORDES ESTAN CORTANDO ZONAS DEL ESQUELETO */
         private static void RenderClippedEdges(Skeleton skeleton, DrawingContext drawingContext)
         {
             if (skeleton.ClippedEdges.HasFlag(FrameEdges.Bottom))
@@ -134,6 +135,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
+        /* EJECUTA LAS TAREAS INICIALES */
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             // Create the drawing group we'll use for drawing
@@ -158,7 +160,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
-            if (null != this.sensor)
+            if (null != this.sensor)   // SI HAY AL MENOS UN KINECT CONECTADO COMIENZA...
             {
                 // Turn on the skeleton stream to receive skeleton frames
                 this.sensor.SkeletonStream.Enable();
@@ -177,7 +179,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
-            if (null == this.sensor)
+            if (null == this.sensor)   // SI NO HAY UN KINECT CONECTADO TERMINA...
             {
                 this.statusBarText.Text = Properties.Resources.NoKinectReady;
             }
@@ -188,6 +190,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
+        /* EJECUTA LAS TAREAS FINALES */
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (null != this.sensor)
