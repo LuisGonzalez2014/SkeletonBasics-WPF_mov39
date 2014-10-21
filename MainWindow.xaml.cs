@@ -16,6 +16,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     /// </summary>
     public partial class MainWindow : Window
     {
+
+       bool correct = false;
         /// <summary>
         /// Width of output drawing
         /// </summary>
@@ -49,12 +51,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <summary>
         /// Brush used for drawing joints that are currently tracked
         /// </summary>
-        private readonly Brush trackedJointBrush = new SolidColorBrush(Color.FromArgb(255, 68, 192, 68));
+        //private readonly Brush trackedJointBrush = new SolidColorBrush(Color.FromArgb(255, 68, 192, 68));
+        private readonly Brush trackedJointBrush = Brushes.Green;
 
         /// <summary>
         /// Brush used for drawing joints that are currently inferred
         /// </summary>        
-        private readonly Brush inferredJointBrush = Brushes.Yellow;
+        //private readonly Brush inferredJointBrush = Brushes.Yellow;
+        private readonly Brush inferredJointBrush = Brushes.Red;
 
         /// <summary>
         /// Pen used for drawing bones that are currently tracked
@@ -64,7 +68,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <summary>
         /// Pen used for drawing bones that are currently inferred
         /// </summary>        
-        private readonly Pen inferredBonePen = new Pen(Brushes.Gray, 1);
+        //private readonly Pen inferredBonePen = new Pen(Brushes.Gray, 1);
+        private readonly Pen inferredBonePen = new Pen(Brushes.Red, 6);
 
         /// <summary>
         /// Active Kinect sensor
@@ -233,17 +238,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         // SI EL ESQUELETO SE DETECTA DENTRO DEL RANGO QUE TIENE KINECT...
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
-                           /*
-                           // PUNTOS DEL ESQUELETO QUE SE VAN A MOVER (en este caso la cadera)
-                           Joint caderaDerecha = skel.Joints[JointType.HipRight];
-                           Joint caderaIzquierda = skel.Joints[JointType.HipLeft];
-                           Joint caderaCentro = skel.Joints[JointType.HipCenter];
-
-                           // OBTENEMOS LAS POSICIONES 3D DE LA CADERA
-                           SkeletonPoint pos_cadDerecha = caderaDerecha.Position;
-                           SkeletonPoint pos_cadIzquierda = caderaIzquierda.Position;
-                           SkeletonPoint pos_cadCentro = caderaCentro.Position;
-                           */
                            this.DrawBonesAndJoints(skel, dc);
                         }
                         else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
@@ -277,14 +271,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
            Joint caderaCentro = skeleton.Joints[JointType.HipCenter];
 
            // OBTENEMOS LAS POSICIONES DEL EJE X DE LOS PUNTOS DE LA CADERA
-           double pos_cadDerecha = caderaDerecha.Position.X;
-           double pos_cadIzquierda = caderaIzquierda.Position.X;
-           double pos_cadCentro = caderaCentro.Position.X;
+           double pos_cadDerecha = caderaDerecha.Position.Z;
+           double pos_cadIzquierda = caderaIzquierda.Position.Z;
+           double pos_cadCentro = caderaCentro.Position.Z;
            // VARIABLE BOOLEANA QUE INDICA LA CORRECCIÓN DEL MOVIMIENTO.
-           bool correct = false;
 
            // SI LA CADERA SE MUEVE HACIA ATRÁS, EL MOVIMIENTO ES CORRECTO
-           if (pos_cadDerecha<=0 && pos_cadIzquierda<=0 && pos_cadCentro<=0)
+           if (pos_cadDerecha>0 && pos_cadIzquierda>0 && pos_cadCentro>0)
               correct = true;
 
             // Render Torso
@@ -321,7 +314,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 Brush drawBrush = null;
 
-                if (joint.TrackingState == JointTrackingState.Tracked)
+                if (joint.TrackingState == JointTrackingState.Tracked && correct)
                 {
                     drawBrush = this.trackedJointBrush;                    
                 }
@@ -377,8 +370,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 return;
             }
 
-           // SUSTITUIMOS LAS SIGUIENTES LÍNEAS PARA PODER ESTABLECER EL COLOR DEL ESQUELETO EN FUNCIÓN A LA CORRECCIÓN DEL MOVIMIENTO.
-           /*
+            // SI AMBOS PUNTOS ESTÁN DETECTADOS Y EL MOVIMIENTO HA SIDO CORRECTO...
             // We assume all drawn bones are inferred unless BOTH joints are tracked
             Pen drawPen = this.inferredBonePen;
             if (joint0.TrackingState == JointTrackingState.Tracked && joint1.TrackingState == JointTrackingState.Tracked)
@@ -387,14 +379,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
-           */
-           // SI AMBOS PUNTOS ESTÁN DETECTADOS Y EL MOVIMIENTO HA SIDO CORRECTO...
-           if (joint0.TrackingState == JointTrackingState.Tracked && joint1.TrackingState == JointTrackingState.Tracked && correct)
-           {
-              drawingContext.DrawLine(new Pen(Brushes.Green, 1), this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
-           }
-           else
-              drawingContext.DrawLine(new Pen(Brushes.Red, 1), this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
         }
 
         /// <summary>
