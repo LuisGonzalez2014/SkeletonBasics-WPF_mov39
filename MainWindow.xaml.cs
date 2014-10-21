@@ -227,6 +227,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
+                           //this.prueba_coordenadas(skel);
+
                             this.DrawBonesAndJoints(skel, dc);
                         }
                         else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
