@@ -301,12 +301,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 if (joint.TrackingState == JointTrackingState.Tracked)
                 {
-                   if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.EN_OBJETIVO)
+                   if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.EN_OBJETIVO && estado != ESTADO_MOVIMIENTO.COMPLETADO)
                       drawBrush = this.hueso_movCorrecto;
                    else if (estado == ESTADO_MOVIMIENTO.ERROR)
                       drawBrush = this.hueso_error;
                    else if (estado == ESTADO_MOVIMIENTO.EN_OBJETIVO)
                       drawBrush = this.hueso_distAlcanzada;
+                   else if (estado == ESTADO_MOVIMIENTO.COMPLETADO)
+                      drawBrush = this.hueso_completado;
                 }
                 else if (joint.TrackingState == JointTrackingState.Inferred)
                 {
@@ -364,12 +366,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             if (joint0.TrackingState == JointTrackingState.Tracked && joint1.TrackingState == JointTrackingState.Tracked)
             {
                 //drawPen = this.trackedBonePen;
-               if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.EN_OBJETIVO)
+               if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.EN_OBJETIVO && estado != ESTADO_MOVIMIENTO.COMPLETADO)
                   drawPen = this.articulacion_movCorrecto;
                else if (estado == ESTADO_MOVIMIENTO.ERROR)
                   drawPen = this.articulacion_error;
                else if (estado == ESTADO_MOVIMIENTO.EN_OBJETIVO)
                   drawPen = this.articulacion_distAlcanzada;
+               else if (estado == ESTADO_MOVIMIENTO.COMPLETADO)
+                  drawPen = this.articulacion_completado;
             }
 
             drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
