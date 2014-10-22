@@ -19,11 +19,19 @@
       private float cad_der_X_ini, cad_der_Y_ini, cad_der_Z_ini;
       private float cad_cen_X_ini, cad_cen_Y_ini, cad_cen_Z_ini;
       private float cad_izq_X_ini, cad_izq_Y_ini, cad_izq_Z_ini;
-      private double distancia = 15;     // Distancia en centímetros para realizar el movimiento
-      private double error = 0.05;       // Porcentaje de error para los cambios de estado (5%).
-      private double dist_X, dist_Y, dist_Z;   // Coordenadas del punta hasta la distancia que hay que alcanzar
+      private double distancia = 18;           // Distancia en centímetros para completar el movimiento
+      private double error = 0.05;             // Porcentaje de error para los cambios de estado (5%)
+      private double dist_X, dist_Y, dist_Z;   // Coordenadas del punto hasta la distancia que hay que alcanzar
 
-      /*
+      // COLORES DEL ESQUELETO QUE SE VAN A EMPLEAR
+      private readonly Brush hueso_movCorrecto = Brushes.Green;
+      private readonly Pen articulacion_movCorrecto = new Pen(Brushes.Green, 6);
+      private readonly Brush hueso_distAlcanzada = Brushes.Yellow;
+      private readonly Pen articulacion_distAlcanzada = new Pen(Brushes.Yellow, 6);
+      private readonly Brush hueso_error = Brushes.Red;
+      private readonly Pen articulacion_error = new Pen(Brushes.Red, 6);
+
+      
       public void prueba_coordenadas(Skeleton skel)
       {
          Joint cad_der = skel.Joints[JointType.HipRight];
@@ -57,8 +65,10 @@
          textBox1.AppendText("X: " + cad_izq_X.ToString() + "\n");
          textBox1.AppendText("Y: " + cad_izq_Y.ToString() + "\n");
          textBox1.AppendText("Z: " + cad_izq_Z.ToString() + "\n");
+
+         textBox1.AppendText("\nESTADO: " + estado + "\n");
       }
-      */
+      
 
       public void movimiento(Skeleton skel)
       {
@@ -95,7 +105,7 @@
 
             if (cad_cen_Z >= cad_cen_Z_ini)
                estado = ESTADO_MOVIMIENTO.A_OBJETIVO;
-            else
+            else if (cad_cen_Z < cad_cen_Z_ini)
                estado = ESTADO_MOVIMIENTO.ERROR;
          }
          else if (estado == ESTADO_MOVIMIENTO.A_OBJETIVO)
@@ -109,7 +119,7 @@
                estado = ESTADO_MOVIMIENTO.ERROR;
             }
          }
-         else if (estado == ESTADO_MOVIMIENTO.EN_OBJETIVO)
+         else if (estado == ESTADO_MOVIMIENTO.EN_OBJETIVO)   // REVISAR!!!!
          {
             if ( (cad_cen_Z >= cad_cen_Z_ini) && (cad_cen_Z <= this.dist_Z-(this.dist_Z*this.error)) )
             {
@@ -130,7 +140,7 @@
             {
                estado = ESTADO_MOVIMIENTO.ERROR;
             }
-         }
+         }/*
          else if (estado == ESTADO_MOVIMIENTO.COMPLETADO)
          {
 
@@ -138,7 +148,9 @@
          else if (estado == ESTADO_MOVIMIENTO.ERROR)
          {
 
-         }
+         }*/
+//         textBox1.Clear();
+//         textBox1.AppendText("\nESTADO: " + estado + "\n");
       }
    }
 }
