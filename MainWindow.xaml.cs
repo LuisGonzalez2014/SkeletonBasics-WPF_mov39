@@ -16,8 +16,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     /// </summary>
     public partial class MainWindow : Window
     {
-
-       bool correct = false;
         /// <summary>
         /// Width of output drawing
         /// </summary>
@@ -51,14 +49,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <summary>
         /// Brush used for drawing joints that are currently tracked
         /// </summary>
-        //private readonly Brush trackedJointBrush = new SolidColorBrush(Color.FromArgb(255, 68, 192, 68));
-        private readonly Brush trackedJointBrush = Brushes.Green;
+        private readonly Brush trackedJointBrush = new SolidColorBrush(Color.FromArgb(255, 68, 192, 68));
 
         /// <summary>
         /// Brush used for drawing joints that are currently inferred
         /// </summary>        
-        //private readonly Brush inferredJointBrush = Brushes.Yellow;
-        private readonly Brush inferredJointBrush = Brushes.Red;
+        private readonly Brush inferredJointBrush = Brushes.Yellow;
 
         /// <summary>
         /// Pen used for drawing bones that are currently tracked
@@ -68,13 +64,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <summary>
         /// Pen used for drawing bones that are currently inferred
         /// </summary>        
-        //private readonly Pen inferredBonePen = new Pen(Brushes.Gray, 1);
-        private readonly Pen inferredBonePen = new Pen(Brushes.Red, 6);
+        private readonly Pen inferredBonePen = new Pen(Brushes.Gray, 1);
 
         /// <summary>
         /// Active Kinect sensor
         /// </summary>
-        private KinectSensor sensor;     /*LO VAMOS A UTILIZAR NOSOTROS TAMBIEN (en lugar de crear otra instancia)*/
+        private KinectSensor sensor;
 
         /// <summary>
         /// Drawing group for skeleton rendering output
@@ -99,7 +94,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="skeleton">skeleton to draw clipping information for</param>
         /// <param name="drawingContext">drawing context to draw to</param>
-        /* INDICA QUÉ BORDES ESTAN CORTANDO ZONAS DEL ESQUELETO */
         private static void RenderClippedEdges(Skeleton skeleton, DrawingContext drawingContext)
         {
             if (skeleton.ClippedEdges.HasFlag(FrameEdges.Bottom))
@@ -140,7 +134,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
-        /* EJECUTA LAS TAREAS INICIALES */
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             // Create the drawing group we'll use for drawing
@@ -165,7 +158,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
-            if (null != this.sensor)   // SI HAY AL MENOS UN KINECT CONECTADO COMIENZA...
+            if (null != this.sensor)
             {
                 // Turn on the skeleton stream to receive skeleton frames
                 this.sensor.SkeletonStream.Enable();
@@ -184,7 +177,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
-            if (null == this.sensor)   // SI NO HAY UN KINECT CONECTADO TERMINA...
+            if (null == this.sensor)
             {
                 this.statusBarText.Text = Properties.Resources.NoKinectReady;
             }
@@ -195,7 +188,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
-        /* EJECUTA LAS TAREAS FINALES */
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (null != this.sensor)
@@ -213,7 +205,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             Skeleton[] skeletons = new Skeleton[0];
 
-            // COMENZAMOS A RECIBIR FRAMES DEL ESQUELETO Y A ALMACENARLOS EN skeletonFrame
             using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
             {
                 if (skeletonFrame != null)
@@ -230,21 +221,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 if (skeletons.Length != 0)
                 {
-                    // PARA CADA ESQUELETO DETECTADO SE HACE LO SIGUIENTE...
                     foreach (Skeleton skel in skeletons)
                     {
                         RenderClippedEdges(skel, dc);
                         
-                        // SI EL ESQUELETO SE DETECTA DENTRO DEL RANGO QUE TIENE KINECT...
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
-<<<<<<< HEAD
-                           this.DrawBonesAndJoints(skel, dc);
-=======
                             bool correct = this.movimiento_39(skel, distancia);
                             this.prueba_coordenadas(skel);
                             this.DrawBonesAndJoints(skel, dc);
->>>>>>> origin/dev_kinect_inicial
                         }
                         else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                         {
@@ -268,83 +253,52 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="skeleton">skeleton to draw</param>
         /// <param name="drawingContext">drawing context to draw to</param>
-       // DIBUJADO DEL ESQUELETO EN PANTALLA
         private void DrawBonesAndJoints(Skeleton skeleton, DrawingContext drawingContext)
         {
-           // PUNTOS DEL ESQUELETO QUE SE VAN A MOVER (en este caso la cadera)
-           Joint caderaDerecha = skeleton.Joints[JointType.HipRight];
-           Joint caderaIzquierda = skeleton.Joints[JointType.HipLeft];
-           Joint caderaCentro = skeleton.Joints[JointType.HipCenter];
-
-           // OBTENEMOS LAS POSICIONES DEL EJE X DE LOS PUNTOS DE LA CADERA
-           double pos_cadDerecha = caderaDerecha.Position.Z;
-           double pos_cadIzquierda = caderaIzquierda.Position.Z;
-           double pos_cadCentro = caderaCentro.Position.Z;
-           // VARIABLE BOOLEANA QUE INDICA LA CORRECCIÓN DEL MOVIMIENTO.
-
-           // SI LA CADERA SE MUEVE HACIA ATRÁS, EL MOVIMIENTO ES CORRECTO
-           if (pos_cadDerecha>0 && pos_cadIzquierda>0 && pos_cadCentro>0)
-              correct = true;
-
-            // Render Torso
-            this.DrawBone(skeleton, drawingContext, JointType.Head, JointType.ShoulderCenter, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderLeft, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderRight, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.Spine, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.Spine, JointType.HipCenter, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipLeft, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipRight, correct);
+           // Render Torso
+            this.DrawBone(skeleton, drawingContext, JointType.Head, JointType.ShoulderCenter);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderLeft);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderRight);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.Spine);
+            this.DrawBone(skeleton, drawingContext, JointType.Spine, JointType.HipCenter);
+            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipLeft);
+            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipRight);
 
             // Left Arm
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderLeft, JointType.ElbowLeft, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.ElbowLeft, JointType.WristLeft, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.WristLeft, JointType.HandLeft, correct);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderLeft, JointType.ElbowLeft);
+            this.DrawBone(skeleton, drawingContext, JointType.ElbowLeft, JointType.WristLeft);
+            this.DrawBone(skeleton, drawingContext, JointType.WristLeft, JointType.HandLeft);
 
             // Right Arm
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderRight, JointType.ElbowRight, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.ElbowRight, JointType.WristRight, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.WristRight, JointType.HandRight, correct);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderRight, JointType.ElbowRight);
+            this.DrawBone(skeleton, drawingContext, JointType.ElbowRight, JointType.WristRight);
+            this.DrawBone(skeleton, drawingContext, JointType.WristRight, JointType.HandRight);
 
             // Left Leg
-            this.DrawBone(skeleton, drawingContext, JointType.HipLeft, JointType.KneeLeft, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.KneeLeft, JointType.AnkleLeft, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.AnkleLeft, JointType.FootLeft, correct);
+            this.DrawBone(skeleton, drawingContext, JointType.HipLeft, JointType.KneeLeft);
+            this.DrawBone(skeleton, drawingContext, JointType.KneeLeft, JointType.AnkleLeft);
+            this.DrawBone(skeleton, drawingContext, JointType.AnkleLeft, JointType.FootLeft);
 
             // Right Leg
-            this.DrawBone(skeleton, drawingContext, JointType.HipRight, JointType.KneeRight, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.KneeRight, JointType.AnkleRight, correct);
-            this.DrawBone(skeleton, drawingContext, JointType.AnkleRight, JointType.FootRight, correct);
+            this.DrawBone(skeleton, drawingContext, JointType.HipRight, JointType.KneeRight);
+            this.DrawBone(skeleton, drawingContext, JointType.KneeRight, JointType.AnkleRight);
+            this.DrawBone(skeleton, drawingContext, JointType.AnkleRight, JointType.FootRight);
  
             // Render Joints
             foreach (Joint joint in skeleton.Joints)
             {
                 Brush drawBrush = null;
-<<<<<<< HEAD
-
-                if (joint.TrackingState == JointTrackingState.Tracked && correct)
-=======
-               /*
-                if (joint.TrackingState == JointTrackingState.Tracked)
->>>>>>> origin/dev_kinect_inicial
-                {
-                    drawBrush = this.trackedJointBrush;                    
-                }
-                else if (joint.TrackingState == JointTrackingState.Inferred)
-                {
-                    drawBrush = this.inferredJointBrush;                    
-                }
-               */
-
+               
                 if (joint.TrackingState == JointTrackingState.Tracked)
                 {
                    if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.BEHIND && estado != ESTADO_MOVIMIENTO.COMPLETE)
-                      drawBrush = this.hueso_movCorrecto;
+                      drawBrush = this.articulacion_movCorrecto;
                    else if (estado == ESTADO_MOVIMIENTO.ERROR)
-                      drawBrush = this.hueso_error;
+                      drawBrush = this.articulacion_error;
                    else if (estado == ESTADO_MOVIMIENTO.BEHIND)
-                      drawBrush = this.hueso_distAlcanzada;
+                      drawBrush = this.articulacion_distAlcanzada;
                    else if (estado == ESTADO_MOVIMIENTO.COMPLETE)
-                      drawBrush = this.hueso_completado;
+                      drawBrush = this.articulacion_completado;
                 }
                 else if (joint.TrackingState == JointTrackingState.Inferred)
                 {
@@ -378,8 +332,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="drawingContext">drawing context to draw to</param>
         /// <param name="jointType0">joint to start drawing from</param>
         /// <param name="jointType1">joint to end drawing at</param>
-        // DIBUJAR LOS "HUESOS" ENTRE DOS PUNTOS jointType0 Y jointType1
-        private void DrawBone(Skeleton skeleton, DrawingContext drawingContext, JointType jointType0, JointType jointType1, bool correct)
+        private void DrawBone(Skeleton skeleton, DrawingContext drawingContext, JointType jointType0, JointType jointType1)
         {
             Joint joint0 = skeleton.Joints[jointType0];
             Joint joint1 = skeleton.Joints[jointType1];
@@ -398,20 +351,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 return;
             }
 
-            // SI AMBOS PUNTOS ESTÁN DETECTADOS Y EL MOVIMIENTO HA SIDO CORRECTO...
             // We assume all drawn bones are inferred unless BOTH joints are tracked
             Pen drawPen = this.inferredBonePen;
             if (joint0.TrackingState == JointTrackingState.Tracked && joint1.TrackingState == JointTrackingState.Tracked)
             {
                 //drawPen = this.trackedBonePen;
                if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.BEHIND && estado != ESTADO_MOVIMIENTO.COMPLETE)
-                  drawPen = this.articulacion_movCorrecto;
+                  drawPen = this.hueso_movCorrecto;
                else if (estado == ESTADO_MOVIMIENTO.ERROR)
-                  drawPen = this.articulacion_error;
+                  drawPen = this.hueso_error;
                else if (estado == ESTADO_MOVIMIENTO.BEHIND)
-                  drawPen = this.articulacion_distAlcanzada;
+                  drawPen = this.hueso_distAlcanzada;
                else if (estado == ESTADO_MOVIMIENTO.COMPLETE)
-                  drawPen = this.articulacion_completado;
+                  drawPen = this.hueso_completado;
             }
 
             drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
@@ -422,7 +374,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
-        // COMPRUEBA SI EL ESQUELETO DETECTADO ESTÁ SENTADO O EN PIE
         private void CheckBoxSeatedModeChanged(object sender, RoutedEventArgs e)
         {
             if (null != this.sensor)
@@ -436,11 +387,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Default;
                 }
             }
-        }
-
-        private void button1_Click(object sender, RoutedEventArgs e)
-        {
-           estado = ESTADO_MOVIMIENTO.QUIET;
         }
     }
 }
