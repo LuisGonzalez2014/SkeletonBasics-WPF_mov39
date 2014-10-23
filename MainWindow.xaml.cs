@@ -238,7 +238,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         // SI EL ESQUELETO SE DETECTA DENTRO DEL RANGO QUE TIENE KINECT...
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
+<<<<<<< HEAD
                            this.DrawBonesAndJoints(skel, dc);
+=======
+                            bool correct = this.movimiento_39(skel, distancia);
+                            this.prueba_coordenadas(skel);
+                            this.DrawBonesAndJoints(skel, dc);
+>>>>>>> origin/dev_kinect_inicial
                         }
                         else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                         {
@@ -313,14 +319,36 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             foreach (Joint joint in skeleton.Joints)
             {
                 Brush drawBrush = null;
+<<<<<<< HEAD
 
                 if (joint.TrackingState == JointTrackingState.Tracked && correct)
+=======
+               /*
+                if (joint.TrackingState == JointTrackingState.Tracked)
+>>>>>>> origin/dev_kinect_inicial
                 {
                     drawBrush = this.trackedJointBrush;                    
                 }
                 else if (joint.TrackingState == JointTrackingState.Inferred)
                 {
                     drawBrush = this.inferredJointBrush;                    
+                }
+               */
+
+                if (joint.TrackingState == JointTrackingState.Tracked)
+                {
+                   if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.BEHIND && estado != ESTADO_MOVIMIENTO.COMPLETE)
+                      drawBrush = this.hueso_movCorrecto;
+                   else if (estado == ESTADO_MOVIMIENTO.ERROR)
+                      drawBrush = this.hueso_error;
+                   else if (estado == ESTADO_MOVIMIENTO.BEHIND)
+                      drawBrush = this.hueso_distAlcanzada;
+                   else if (estado == ESTADO_MOVIMIENTO.COMPLETE)
+                      drawBrush = this.hueso_completado;
+                }
+                else if (joint.TrackingState == JointTrackingState.Inferred)
+                {
+                   drawBrush = this.inferredJointBrush;
                 }
 
                 if (drawBrush != null)
@@ -375,7 +403,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             Pen drawPen = this.inferredBonePen;
             if (joint0.TrackingState == JointTrackingState.Tracked && joint1.TrackingState == JointTrackingState.Tracked)
             {
-                drawPen = this.trackedBonePen;
+                //drawPen = this.trackedBonePen;
+               if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.BEHIND && estado != ESTADO_MOVIMIENTO.COMPLETE)
+                  drawPen = this.articulacion_movCorrecto;
+               else if (estado == ESTADO_MOVIMIENTO.ERROR)
+                  drawPen = this.articulacion_error;
+               else if (estado == ESTADO_MOVIMIENTO.BEHIND)
+                  drawPen = this.articulacion_distAlcanzada;
+               else if (estado == ESTADO_MOVIMIENTO.COMPLETE)
+                  drawPen = this.articulacion_completado;
             }
 
             drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
@@ -400,6 +436,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Default;
                 }
             }
+        }
+
+        private void button1_Click(object sender, RoutedEventArgs e)
+        {
+           estado = ESTADO_MOVIMIENTO.QUIET;
         }
     }
 }
