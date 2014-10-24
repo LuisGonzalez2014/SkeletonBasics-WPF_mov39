@@ -6,6 +6,7 @@
 
 namespace Microsoft.Samples.Kinect.SkeletonBasics
 {
+   using System;
    using System.IO;
    using System.Windows;
    using System.Windows.Media;
@@ -29,24 +30,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
       private ESTADO_MOVIMIENTO estado = ESTADO_MOVIMIENTO.QUIET;
 
       /// <summary>
-      /// Coordenadas X y Z de la posición inicial de la cadera (hipcenter)
+      /// Posición inicial de la cadera (hipcenter)
       /// </summary>
-      private float cadera_ini_X, cadera_ini_Z;
+      SkeletonPoint cadera_inicial;
 
       /// <summary>
-      /// Distancia en centímetros para completar el movimiento
+      /// Distancia en metros para completar el movimiento
       /// </summary>
-      private double distancia = 10;
+      private double distancia = 0.1;
 
       /// <summary>
       /// Porcentaje de error admitido para la precisión de la detección (5%)
       /// </summary>
       private double error = 0.05;
-
-      /// <summary>
-      /// Coordenada Z del punto hasta la distancia que hay que alcanzar
-      /// </summary>
-      private double dist_Z;
 
       /// <summary>
       /// Pincel para dibujar las articulaciones cuando el movimiento es correcto
@@ -96,12 +92,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
       public void prueba_coordenadas(Skeleton skel)
       {
          // Almacenamos el punto central de la cadera detectado
-         Joint cad_cen = skel.Joints[JointType.HipCenter];
+         Joint cadera = skel.Joints[JointType.HipCenter];
 
          // Obtenemos las coordenadas del punto anterior en centímetros
-         float cadera_X = cad_cen.Position.X * 100;
-         float cadera_Y = cad_cen.Position.Y * 100;
-         float cadera_Z = cad_cen.Position.Z * 100;
+         float cadera_X = cadera.Position.X * 100;
+         float cadera_Y = cadera.Position.Y * 100;
+         float cadera_Z = cadera.Position.Z * 100;
 
          // Imprimimos las coordenadas en el cuadro de texto 1
          textBox1.Clear();
@@ -122,30 +118,37 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
       /// <returns>confirmación o negación del movimiento</returns>
       public bool movimiento_39(Skeleton skel, double distancia)
       {
-         // Almacenamos el punto central de la cadera detectado
-         Joint cad_cen = skel.Joints[JointType.HipCenter];
+         // Obtenemos la posición actual de la cadera
+         SkeletonPoint cadera_actual = skel.Joints[JointType.HipCenter].Position;
 
-         // Obtenemos las coordenadas X y Z del punto anterior en centímetros
-         float cadera_X = cad_cen.Position.X * 100;
-         float cadera_Z = cad_cen.Position.Z * 100;
+         // Distancia desde la posición de partida de la cadera hasta la posición actual.
+         double dist_actual = 0;
+
+         // Errores permitidos en la distancia actual donde deberá oscilar la distancia calculada
+         double dist_error_minimo = dist_actual - (dist_actual * this.error);
+         double dist_error_maximo = dist_actual + (dist_actual * this.error);
+
+         // Errores permitidos en el desplazamiento lateral de la cadera
+         double x_error_minimo = cadera_inicial.X - (cadera_inicial.X * this.error + 0.02);
+         double x_error_maximo = cadera_inicial.X + (cadera_inicial.X * this.error + 0.02);
 
          // Comprobación del estado actual de ejecución
          if ( estado == ESTADO_MOVIMIENTO.QUIET )
          {
-            // Obtenemos las coordenadas iniciales X y Z de la cadera en centímetros
-            this.cadera_ini_X = cadera_X;
-            this.cadera_ini_Z = cadera_Z;
+            // Obtenemos la posición inicial de la cadera
+            cadera_inicial = skel.Joints[JointType.HipCenter].Position;
 
-            // Calculamos la coordenada Z del punto que está a la distancia deseada
-            this.dist_Z = cadera_ini_Z + this.distancia;
-            
             estado = ESTADO_MOVIMIENTO.GO_BACK;
          }
          else if ( estado == ESTADO_MOVIMIENTO.GO_BACK )
          {
+            // Calculamos la distancia de la cadera entre la posición de partida y la actual
+            dist_actual = this.distance(cadera_inicial, cadera_actual);
+
             // Si estando en la posición inicial, movemos la cadera hacia adelante o hacia los lados, el movimiento es erroneo
-            if ( (cadera_Z <= cadera_ini_Z - (cadera_ini_Z * this.error)) ||
-               (cadera_X > cadera_ini_X+(cadera_ini_X*this.error+2)) || (cadera_X < cadera_ini_X-(cadera_ini_X*this.error+2)) )
+            // (para el movimiento lateral, en el eje X, se aumenta el error permitido en 2 cm)
+            if ( (cadera_actual.Z <= cadera_inicial.Z - (cadera_inicial.Z * this.error)) || (cadera_actual.X > x_error_maximo)
+               || (cadera_actual.X < x_error_minimo) )
             {
                estado = ESTADO_MOVIMIENTO.ERROR;
                // Imprimimos el error cometido en el cuadro de texto 3
@@ -153,13 +156,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                textBox3.AppendText("Demasiado adelante, derecha o izquierda");
             }
             // Si estando en la posición inicial, movemos la cadera hacia atrás el movimiento está siendo correcto
-            else if ( (cadera_Z >= this.dist_Z) && cadera_Z < this.dist_Z+(this.dist_Z*this.error) )
+            else if ( (this.distancia >= dist_error_minimo) && (this.distancia <= dist_error_maximo) )
                estado = ESTADO_MOVIMIENTO.BEHIND;
          }
          else if ( estado == ESTADO_MOVIMIENTO.BEHIND )
          {
             // Si estando en la distancia requerida, seguimos retrasando la cadera, el movimiento es erroneo
-            if ( cadera_Z > this.dist_Z + (this.dist_Z * this.error) )
+            if (this.distancia >= dist_error_maximo)
             {
                estado = ESTADO_MOVIMIENTO.ERROR;
                // Imprimimos el error cometido en el cuadro de texto 3
@@ -167,14 +170,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                textBox3.AppendText("Demasiado atrás");
             }
             // Si estando en la distancia requerida, avanzamos la cadera hacia adelante, el movimiento está siendo correcto
-            else if (cadera_Z < this.dist_Z-(this.dist_Z*this.error))
+            else if ( this.distancia <= dist_error_minimo )
                estado = ESTADO_MOVIMIENTO.GO_FORWARD;
          }
          else if ( estado == ESTADO_MOVIMIENTO.GO_FORWARD )
          {
             // Si volviendo a la posición inicial, desplazamos la cadera hacia los lados, el movimiento es erroneo
-            if ( (cadera_X > cadera_ini_X + (cadera_ini_X * this.error + 2)) ||
-               (cadera_X < cadera_ini_X - (cadera_ini_X * this.error + 2)) )
+            // (para el movimiento lateral, en el eje X, se aumenta el error permitido en 2 cm)
+            if ( (cadera_actual.X > x_error_maximo) || (cadera_actual.X < x_error_minimo) )
             {
                estado = ESTADO_MOVIMIENTO.ERROR;
                // Imprimimos el error cometido en el cuadro de texto 3
@@ -182,7 +185,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                textBox3.AppendText("Derecha o Izquierda");
             }
             // Si volviendo a la posición inicial, avanzamos hacia la posición de partida, el movimiento ha sido correcto
-            else if ( cadera_Z < cadera_ini_Z && cadera_Z > cadera_ini_Z - (cadera_ini_Z * this.error) )
+            else if ( (0 >= dist_error_minimo) && (0 <= dist_error_maximo) )
             {
                estado = ESTADO_MOVIMIENTO.COMPLETE;
                return true;
@@ -191,15 +194,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
          else if ( estado == ESTADO_MOVIMIENTO.ERROR )
          {
             // Si hemos realizado un movimiento erroneo y volvemos a la posición inicial, se reinicia el proceso
-            if ( cadera_Z > cadera_ini_Z-(cadera_ini_Z*this.error) && cadera_Z < cadera_ini_Z+(cadera_ini_Z*this.error) &&
-               cadera_X > cadera_ini_X-(cadera_ini_X*this.error+2) && cadera_X < cadera_ini_X+(cadera_ini_X*this.error+2) )
+            if ( (0 >= dist_error_minimo) && (0 <= dist_error_maximo) && (cadera_actual.X < x_error_maximo) && (cadera_actual.X > x_error_minimo) )
                estado = ESTADO_MOVIMIENTO.GO_BACK;
          }
 
          // Imprimimos la distancia restante hacia atrás en el cuadro de texto 2
          textBox2.Clear();
-         textBox2.AppendText((this.dist_Z-cadera_Z).ToString());
+         textBox2.AppendText(dist_actual.ToString());
          return false;
+      }
+
+      /// <summary>
+      /// Devuelve la distancia entre las posiciones de un punto del esqueleto desde un instante inicial al instante final
+      /// </summary>
+      /// <param name="inicial">posición en el instante inicial</param>
+      /// <param name="final">posición en el instante final</param>
+      /// <returns>distancia entre ambas posiciones</returns>
+      public double distance(SkeletonPoint inicial, SkeletonPoint final)
+      {
+         return Math.Sqrt(Math.Pow((final.X - inicial.X), 2) + Math.Pow((final.Y - inicial.Y), 2) + Math.Pow((final.Z - inicial.Z), 2));
       }
 
       /// <summary>
