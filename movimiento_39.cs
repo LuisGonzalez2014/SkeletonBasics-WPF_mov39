@@ -121,22 +121,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
          // Obtenemos la posición actual de la cadera
          SkeletonPoint cadera_actual = skel.Joints[JointType.HipCenter].Position;
 
-         // Distancia desde la posición de partida de la cadera hasta la posición actual.
+         // Distancia desde la posición de partida de la cadera hasta la posición actual
          double dist_actual = 0;
 
          // Errores permitidos en la distancia actual donde deberá oscilar la distancia calculada
-         double dist_error_minimo = dist_actual - (dist_actual * this.error);
-         double dist_error_maximo = dist_actual + (dist_actual * this.error);
+         double dist_error_minimo = 0, dist_error_maximo = 0;
 
          // Errores permitidos en el desplazamiento lateral de la cadera
-         double x_error_minimo = cadera_inicial.X - (cadera_inicial.X * this.error + 0.02);
-         double x_error_maximo = cadera_inicial.X + (cadera_inicial.X * this.error + 0.02);
+         double x_error_minimo = 0, x_error_maximo = 0;
 
          // Comprobación del estado actual de ejecución
          if ( estado == ESTADO_MOVIMIENTO.QUIET )
          {
             // Obtenemos la posición inicial de la cadera
             cadera_inicial = skel.Joints[JointType.HipCenter].Position;
+            
+            // Calculamos los errores permitidos para el desplazamiento lateral
+            x_error_minimo = cadera_inicial.X - (cadera_inicial.X * this.error + 0.02);
+            x_error_maximo = cadera_inicial.X + (cadera_inicial.X * this.error + 0.02);
 
             estado = ESTADO_MOVIMIENTO.GO_BACK;
          }
@@ -144,6 +146,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
          {
             // Calculamos la distancia de la cadera entre la posición de partida y la actual
             dist_actual = this.distance(cadera_inicial, cadera_actual);
+
+            // Calculamos los errores permitidos para la distancia
+            dist_error_minimo = dist_actual - (dist_actual * this.error);
+            dist_error_maximo = dist_actual + (dist_actual * this.error);
+
+            // Calculamos los errores permitidos para el desplazamiento lateral
+            x_error_minimo = cadera_inicial.X - (cadera_inicial.X * this.error + 0.02);
+            x_error_maximo = cadera_inicial.X + (cadera_inicial.X * this.error + 0.02);
 
             // Si estando en la posición inicial, movemos la cadera hacia adelante o hacia los lados, el movimiento es erroneo
             // (para el movimiento lateral, en el eje X, se aumenta el error permitido en 2 cm)
@@ -175,6 +185,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
          }
          else if ( estado == ESTADO_MOVIMIENTO.GO_FORWARD )
          {
+            // Calculamos los errores permitidos para el desplazamiento lateral
+            x_error_minimo = cadera_inicial.X - (cadera_inicial.X * this.error + 0.02);
+            x_error_maximo = cadera_inicial.X + (cadera_inicial.X * this.error + 0.02);
+
             // Si volviendo a la posición inicial, desplazamos la cadera hacia los lados, el movimiento es erroneo
             // (para el movimiento lateral, en el eje X, se aumenta el error permitido en 2 cm)
             if ( (cadera_actual.X > x_error_maximo) || (cadera_actual.X < x_error_minimo) )
@@ -193,8 +207,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
          }
          else if ( estado == ESTADO_MOVIMIENTO.ERROR )
          {
+            // Calculamos los errores permitidos para el desplazamiento lateral
+            x_error_minimo = cadera_inicial.X - (cadera_inicial.X * this.error + 0.02);
+            x_error_maximo = cadera_inicial.X + (cadera_inicial.X * this.error + 0.02);
+
             // Si hemos realizado un movimiento erroneo y volvemos a la posición inicial, se reinicia el proceso
-            if ( (0 >= dist_error_minimo) && (0 <= dist_error_maximo) && (cadera_actual.X < x_error_maximo) && (cadera_actual.X > x_error_minimo) )
+            if ( (0 >= dist_error_minimo) && (0 <= dist_error_maximo) && (cadera_actual.X < x_error_maximo)
+               && (cadera_actual.X > x_error_minimo) )
                estado = ESTADO_MOVIMIENTO.GO_BACK;
          }
 
