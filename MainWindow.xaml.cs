@@ -291,14 +291,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                
                 if (joint.TrackingState == JointTrackingState.Tracked)
                 {
-                   if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.BEHIND && estado != ESTADO_MOVIMIENTO.COMPLETE)
-                      drawBrush = this.articulacion_movCorrecto;
-                   else if (estado == ESTADO_MOVIMIENTO.ERROR)
+                   if (estado == ESTADO_MOVIMIENTO.ERROR)
                       drawBrush = this.articulacion_error;
                    else if (estado == ESTADO_MOVIMIENTO.BEHIND)
                       drawBrush = this.articulacion_distAlcanzada;
                    else if (estado == ESTADO_MOVIMIENTO.COMPLETE)
                       drawBrush = this.articulacion_completado;
+                   else
+                      drawBrush = this.articulacion_movCorrecto;
                 }
                 else if (joint.TrackingState == JointTrackingState.Inferred)
                 {
@@ -356,14 +356,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             if (joint0.TrackingState == JointTrackingState.Tracked && joint1.TrackingState == JointTrackingState.Tracked)
             {
                 //drawPen = this.trackedBonePen;
-               if (estado != ESTADO_MOVIMIENTO.ERROR && estado != ESTADO_MOVIMIENTO.BEHIND && estado != ESTADO_MOVIMIENTO.COMPLETE)
-                  drawPen = this.hueso_movCorrecto;
-               else if (estado == ESTADO_MOVIMIENTO.ERROR)
+               if (estado == ESTADO_MOVIMIENTO.ERROR)
                   drawPen = this.hueso_error;
                else if (estado == ESTADO_MOVIMIENTO.BEHIND)
                   drawPen = this.hueso_distAlcanzada;
                else if (estado == ESTADO_MOVIMIENTO.COMPLETE)
                   drawPen = this.hueso_completado;
+               else
+                  drawPen = this.hueso_movCorrecto;
             }
 
             drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
