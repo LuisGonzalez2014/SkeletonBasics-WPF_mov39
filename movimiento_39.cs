@@ -221,7 +221,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
          textBox2.Clear();
          //textBox2.AppendText(((dist-dist_actual)*100).ToString());
          textBox2.AppendText((dist_actual*100).ToString());
-
          return salida;
       }
 
