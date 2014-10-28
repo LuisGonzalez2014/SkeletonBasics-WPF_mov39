@@ -227,7 +227,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
-                            bool correct = this.movimiento_39(skel, distancia);
+                            int correct = this.movimiento_39(skel, 0.2);
                             this.prueba_coordenadas(skel);
                             this.DrawBonesAndJoints(skel, dc);
                         }
